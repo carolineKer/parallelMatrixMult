@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "matrix.h"
 
 Matrix * read_matrix(char * filename)
@@ -36,8 +37,8 @@ Matrix * read_matrix(char * filename)
 Matrix * create_simple_matrix(PAR_CTXT * parCtxt)
 {
     Matrix * m = (Matrix *)malloc(sizeof(Matrix));
-    m->I = parCtxt->P;
-    m->J = parCtxt->P;
+    m->I = parCtxt->P * parCtxt->i;
+    m->J = parCtxt->P * parCtxt->j;
     m->ptr = (double **)malloc(m->I*sizeof(double*));
     for (int i = 0 ; i<m->I; i++)
     {
@@ -48,4 +49,56 @@ Matrix * create_simple_matrix(PAR_CTXT * parCtxt)
         }
     }
     return m;
+}
+
+Matrix * create_id_matrix(PAR_CTXT * parCtxt)
+{
+    Matrix * m = (Matrix *)malloc(sizeof(Matrix));
+    m->I = parCtxt->P * parCtxt->i;
+    m->J = parCtxt->P * parCtxt->j;
+    m->ptr = (double **)malloc(m->I*sizeof(double*));
+    for (int i = 0 ; i<m->I; i++)
+    {
+        m->ptr[i] = (double *)malloc(m->J*sizeof(double));
+        for (int j = 0; j<m->J; j++)
+        {
+            if (i != j)
+                m->ptr[i][j] = 0;
+            else
+                m->ptr[i][j] = 2;
+        }
+    }
+    return m;
+}
+
+Matrix * alloc_block_matrix(PAR_CTXT * parCtxt)
+{
+    Matrix * m = (Matrix *)malloc(sizeof(Matrix));
+    m->I = parCtxt->i;
+    m->J = parCtxt->j;
+    m->ptr = (double **)malloc(m->I*sizeof(double*));
+    for (int i = 0 ; i<m->I; i++)
+    {
+        m->ptr[i] = (double *)malloc(m->J*sizeof(double));
+        for (int j = 0; j<m->J; j++)
+        {
+            m->ptr[i][j] = 0;
+        }
+    }
+    return m;
+}
+
+void matrix_mult_add(Matrix * a, Matrix *b, Matrix *c)
+{
+    assert(a->J == b->I);
+    for (int i = 0; i<c->I; i++)
+    {
+        for (int j = 0; j<c->J; j++)
+        {
+            for (int k = 0; k <a->J; k++)
+            {
+                c->ptr[i][j] += a->ptr[i][k]*b->ptr[k][j];
+            }
+        }
+    }
 }

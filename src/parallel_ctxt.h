@@ -6,6 +6,8 @@ typedef struct _PAR_CTXT
     int p; //row of the processor in the mesh
     int q; //line of the processor in the mesh
     int rank;
+    int i;
+    int j;
 } PAR_CTXT;
 
 PAR_CTXT * parallel_context_init(int argc, char** argv);
