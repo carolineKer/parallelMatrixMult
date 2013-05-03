@@ -5,6 +5,14 @@
 #include <sys/stat.h>
 
 #include "matrix.h"
+#include "cblas.h"
+
+void matrix_mult_add_cblas(Matrix * a, Matrix *b, Matrix *c)
+{
+   assert(a->J == b->I);
+   cblas_dgemm(CblasRowMajor , CblasNoTrans,CblasNoTrans, a->I, b->J, a->J, 
+           1, a, a->J, b, b->J ,2, c, c->J);
+}
 
 Matrix * read_matrix(char * filename)
 {

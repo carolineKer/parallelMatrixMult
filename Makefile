@@ -1,5 +1,6 @@
 CC:=mpicc
 LD:=mpicc
+LDFLAGS=-lm -lblas
 CFLAGS:=-std=c99 -g
 SRC_DIR=src
 TEST_DIR=test
@@ -31,7 +32,7 @@ $(MATRIX)C: $(EXE) $(MATRIX)A $(MATRIX)B
 	mpirun -np $(PROC_NB) $(EXE) $(MATRIX)A $(MATRIX)B $(MATRIX)C
 
 $(EXE):$(OBJ)
-	$(LD) $(LDFLAGS) -o $@ $^
+	$(LD) -o $@ $^ $(LDFLAGS) 
 
 clean:
 	rm -f $(MATRIX)*
