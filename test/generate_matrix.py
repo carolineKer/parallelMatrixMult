@@ -16,11 +16,11 @@ if __name__ == "__main__":
     nb_rows = int(sys.argv[1])
     nb_cols = int(sys.argv[2])
 
-    print str(nb_rows)+";"+str(nb_cols)
-
+    matrix = []
     for r in range(0, nb_rows):
         line = []
         for c in range(0, nb_cols):
             line.append(repr(random.uniform(MIN, MAX)))
-        line = ";".join(line)
-        print line
+        line = ",".join(line)
+        matrix.append(line)
+    print ";".join(matrix)
