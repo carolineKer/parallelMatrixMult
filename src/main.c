@@ -13,7 +13,7 @@ int mod(int r,int  m)
 }
 
 void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
-        Matrix * B, Matrix * a_ptr, Matrix * b_ptr)
+        Matrix * B, Matrix * a, Matrix * b)
 {
     //Process 0 sends matrices
     if (parCtxt->rank == 0)
@@ -38,14 +38,14 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
                 if (destA != 0)
                     for (int i = 0; i < parCtxt->i; i++)
                     {
-                        MPI_Send(&(A->ptr[row*parCtxt->i + i][col*parCtxt->j]), parCtxt->j,
+                        MPI_Send(&(A->ptr[(row*parCtxt->i + i)*A->J+col*parCtxt->j]), parCtxt->j,
                             MPI_DOUBLE, destA, 0xA, MPI_COMM_WORLD);
                     }
                 if (destB != 0)
                 {
                     for (int i = 0; i <parCtxt->i; i++)
                     {
-                        MPI_Send(&(B->ptr[row*parCtxt->i+i][col*parCtxt->j]), parCtxt->j,
+                        MPI_Send(&(B->ptr[(row*parCtxt->i+i)*B->J+col*parCtxt->j]), parCtxt->j,
                             MPI_DOUBLE, destB, 0xB, MPI_COMM_WORLD);
                     }
                 }
@@ -56,8 +56,8 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
         {
             for (int j = 0; j<parCtxt->j;j++)
             {
-                a_ptr->ptr[i][j] = A->ptr[i][j];
-                b_ptr->ptr[i][j] = B->ptr[i][j];
+                a->ptr[i*a->J+j] = A->ptr[i*A->J+j];
+                b->ptr[i*b->J+j] = B->ptr[i*B->J+j];
             }
         }
 
@@ -67,12 +67,12 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
         MPI_Status status;
         for (int i = 0; i<parCtxt->i; i++)
         {
-            MPI_Recv(a_ptr->ptr[i], parCtxt->j, MPI_DOUBLE,
+            MPI_Recv(&(a->ptr[i*parCtxt->j]), parCtxt->j, MPI_DOUBLE,
                 0, 0xA, MPI_COMM_WORLD, &status);
         }
         for (int i = 0; i<parCtxt->i; i++)
         {
-            MPI_Recv(b_ptr->ptr[i], parCtxt->j, MPI_DOUBLE,
+            MPI_Recv(&(b->ptr[i*parCtxt->j]), parCtxt->j, MPI_DOUBLE,
                 0, 0xB, MPI_COMM_WORLD, &status);
         }
     }
@@ -94,10 +94,10 @@ int main(int argc, char** argv)
     Matrix * B;
     if (parCtxt->rank == 0)
     {
-        /*A = create_simple_matrix(parCtxt);*/
-        /*B = create_id_matrix(parCtxt);*/
-        A = read_matrix(A_filename);
-        B = read_matrix(B_filename);
+        A = create_simple_matrix(parCtxt);
+        B = create_id_matrix(parCtxt);
+        /*A = read_matrix(A_filename);*/
+        /*B = read_matrix(B_filename);*/
     }
 
     initial_distrib(parCtxt, A, B,a ,b);
@@ -112,34 +112,20 @@ int main(int argc, char** argv)
         int destA = destArow * parCtxt->P + destAcol;
         int rcvA = destArow * parCtxt->P + rcvAcol;
 
-        for (int i = 0; i<parCtxt->i; i++)
-        {
-            double * to_send = a->ptr[i];
-            printf("proc %d Send %d doubles replace A dest %d rec %d\n",
-                    parCtxt->rank, parCtxt->j, destA, rcvA);
 
-            MPI_Sendrecv_replace(a->ptr[i], parCtxt->j, MPI_DOUBLE,
-                            destA, shift, rcvA, shift, MPI_COMM_WORLD,
-                                &status);
-        }
-        printf("proc %d Send replace A dest %d rec %d Done\n", 
-                parCtxt->rank, destA, rcvA);
+        MPI_Sendrecv_replace(a->ptr, parCtxt->i*parCtxt->j, MPI_DOUBLE,
+                        destA, shift, rcvA, shift, MPI_COMM_WORLD,
+                            &status);
 
         int Bcol = parCtxt->q;
         int destBrow = mod((parCtxt->p-1),parCtxt->P);
         int rcvBrow = mod((parCtxt->p+1),parCtxt->P);
         int destB = destBrow *parCtxt->P + Bcol;
         int rcvB = rcvBrow *parCtxt->P + Bcol;
-        printf("proc %d Send replace B dest %d rec %d\n", 
-                parCtxt->rank ,destB, rcvB);
-        for (int i = 0; i<parCtxt->i; i++)
-        {
-            MPI_Sendrecv_replace(b->ptr[i], parCtxt->j, MPI_DOUBLE,
-                    destB, shift, rcvB, shift, MPI_COMM_WORLD,
-                    &status);
-        }
-        printf("proc %d Send replace B dest %d rec %d Done\n", 
-                parCtxt->rank ,destB, rcvB);
+
+        MPI_Sendrecv_replace(b->ptr, parCtxt->i*parCtxt->j, MPI_DOUBLE,
+                destB, shift, rcvB, shift, MPI_COMM_WORLD,
+                &status);
 
         matrix_mult_add(a,b,c);
     }
@@ -147,7 +133,7 @@ int main(int argc, char** argv)
     for (int i = 0; i <parCtxt->i; i++)
     {
         for (int j = 0; j<parCtxt->j; j++)
-            printf("processor (line %d, col %d) : results %lf\n", parCtxt->p*parCtxt->i+i, parCtxt->q*parCtxt->j+j, c->ptr[i][j]);
+            printf("processor (line %d, col %d) : results %lf\n", parCtxt->p*parCtxt->i+i, parCtxt->q*parCtxt->j+j, c->ptr[i*c->J+j]);
     }
 
     parallel_context_finalize(parCtxt);

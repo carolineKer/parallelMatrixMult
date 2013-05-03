@@ -11,7 +11,7 @@ void matrix_mult_add_cblas(Matrix * a, Matrix *b, Matrix *c)
 {
    assert(a->J == b->I);
    cblas_dgemm(CblasRowMajor , CblasNoTrans,CblasNoTrans, a->I, b->J, a->J, 
-           1, a, a->J, b, b->J ,2, c, c->J);
+           1, a->ptr, a->J, b->ptr, b->J ,1, c->ptr, c->J);
 }
 
 Matrix * read_matrix(char * filename)
@@ -67,14 +67,13 @@ Matrix * read_matrix(char * filename)
     Matrix * m = (Matrix *)malloc(sizeof(Matrix));
     m->I = nb_rows;
     m->J = nb_cols;
-    m->ptr = (double **)malloc(m->I*sizeof(double*));
+    m->ptr = (double *)malloc( m->I*m->J*sizeof(double));
     for (int i = 0 ; i<m->I; i++)
     {
-        m->ptr[i] = (double *)malloc(m->J*sizeof(double));
         for (int j = 0; j<m->J; j++)
         {
             assert(tok != NULL);
-            m->ptr[i][j] = atof(tok);
+            m->ptr[i*m->J+j] = atof(tok);
             tok = strtok(NULL, ",;");
         }
     }
@@ -91,13 +90,12 @@ Matrix * create_simple_matrix(PAR_CTXT * parCtxt)
     Matrix * m = (Matrix *)malloc(sizeof(Matrix));
     m->I = parCtxt->P * parCtxt->i;
     m->J = parCtxt->P * parCtxt->j;
-    m->ptr = (double **)malloc(m->I*sizeof(double*));
+    m->ptr = (double *)malloc( m->I*m->J*sizeof(double));
     for (int i = 0 ; i<m->I; i++)
     {
-        m->ptr[i] = (double *)malloc(m->J*sizeof(double));
         for (int j = 0; j<m->J; j++)
         {
-            m->ptr[i][j] = i*m->I + j;
+            m->ptr[i*m->J+j] = i*m->I + j;
         }
     }
     return m;
@@ -108,16 +106,15 @@ Matrix * create_id_matrix(PAR_CTXT * parCtxt)
     Matrix * m = (Matrix *)malloc(sizeof(Matrix));
     m->I = parCtxt->P * parCtxt->i;
     m->J = parCtxt->P * parCtxt->j;
-    m->ptr = (double **)malloc(m->I*sizeof(double*));
+    m->ptr = (double *)malloc( m->I*m->J*sizeof(double));
     for (int i = 0 ; i<m->I; i++)
     {
-        m->ptr[i] = (double *)malloc(m->J*sizeof(double));
         for (int j = 0; j<m->J; j++)
         {
             if (i != j)
-                m->ptr[i][j] = 0;
+                m->ptr[i*m->J+j] = 0;
             else
-                m->ptr[i][j] = 2;
+                m->ptr[i*m->J+j] = 1;
         }
     }
     return m;
@@ -128,13 +125,12 @@ Matrix * alloc_block_matrix(PAR_CTXT * parCtxt)
     Matrix * m = (Matrix *)malloc(sizeof(Matrix));
     m->I = parCtxt->i;
     m->J = parCtxt->j;
-    m->ptr = (double **)malloc(m->I*sizeof(double*));
+    m->ptr = (double *)malloc( m->I*m->J*sizeof(double));
     for (int i = 0 ; i<m->I; i++)
     {
-        m->ptr[i] = (double *)malloc(m->J*sizeof(double));
         for (int j = 0; j<m->J; j++)
         {
-            m->ptr[i][j] = 0;
+            m->ptr[i*m->J+j] = 0;
         }
     }
     return m;
@@ -149,7 +145,8 @@ void matrix_mult_add(Matrix * a, Matrix *b, Matrix *c)
         {
             for (int k = 0; k <a->J; k++)
             {
-                c->ptr[i][j] += a->ptr[i][k]*b->ptr[k][j];
+                c->ptr[i*c->J+j] += 
+                    a->ptr[i*a->J+k]*b->ptr[k*b->J+j];
             }
         }
     }

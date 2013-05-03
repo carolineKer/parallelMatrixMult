@@ -4,7 +4,7 @@
 #include "parallel_ctxt.h"
 typedef struct _Matrix
 {
-    double ** ptr;
+    double * ptr;
     int I;
     int J;
 } Matrix;
