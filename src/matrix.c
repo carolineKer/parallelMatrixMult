@@ -85,11 +85,11 @@ Matrix * read_matrix(char * filename)
 }
 
 //Create a matrix with one data per processor
-Matrix * create_simple_matrix(PAR_CTXT * parCtxt)
+Matrix * create_simple_matrix(int nb_row, int nb_col)
 {
     Matrix * m = (Matrix *)malloc(sizeof(Matrix));
-    m->I = parCtxt->P * parCtxt->i;
-    m->J = parCtxt->P * parCtxt->j;
+    m->I = nb_row;
+    m->J = nb_col;
     m->ptr = (double *)malloc( m->I*m->J*sizeof(double));
     for (int i = 0 ; i<m->I; i++)
     {
@@ -101,11 +101,11 @@ Matrix * create_simple_matrix(PAR_CTXT * parCtxt)
     return m;
 }
 
-Matrix * create_id_matrix(PAR_CTXT * parCtxt)
+Matrix * create_id_matrix(int nb_row, int nb_col)
 {
     Matrix * m = (Matrix *)malloc(sizeof(Matrix));
-    m->I = parCtxt->P * parCtxt->i;
-    m->J = parCtxt->P * parCtxt->j;
+    m->I = nb_row;
+    m->J = nb_col;
     m->ptr = (double *)malloc( m->I*m->J*sizeof(double));
     for (int i = 0 ; i<m->I; i++)
     {
@@ -120,11 +120,11 @@ Matrix * create_id_matrix(PAR_CTXT * parCtxt)
     return m;
 }
 
-Matrix * alloc_block_matrix(PAR_CTXT * parCtxt)
+Matrix * alloc_block_matrix(int nb_row, int nb_col)
 {
     Matrix * m = (Matrix *)malloc(sizeof(Matrix));
-    m->I = parCtxt->i;
-    m->J = parCtxt->j;
+    m->I = nb_row;
+    m->J = nb_col;
     m->ptr = (double *)malloc( m->I*m->J*sizeof(double));
     for (int i = 0 ; i<m->I; i++)
     {

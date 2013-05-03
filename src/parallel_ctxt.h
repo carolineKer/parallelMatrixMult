@@ -8,6 +8,7 @@ typedef struct _PAR_CTXT
     int rank;
     int i;
     int j;
+    int k;
 } PAR_CTXT;
 
 PAR_CTXT * parallel_context_init(int argc, char** argv);

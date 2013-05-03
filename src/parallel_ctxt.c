@@ -30,6 +30,7 @@ PAR_CTXT * parallel_context_init(int argc, char** argv)
     parCtxt->rank = rank;
     parCtxt->i = 2; //rows per processor
     parCtxt->j = 2; //columns per processor
+    parCtxt->k = 3;
 
     return parCtxt;
 }
