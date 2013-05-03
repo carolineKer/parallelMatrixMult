@@ -86,17 +86,18 @@ int main(int argc, char** argv)
     Matrix * b = alloc_block_matrix(parCtxt);
     Matrix * c = alloc_block_matrix(parCtxt);
 
+    //TODO
+    char * A_filename = argv[1];
+    char * B_filename = argv[2];
+
     Matrix * A;
     Matrix * B;
     if (parCtxt->rank == 0)
     {
-        char A_filename[100] = "Nom bidon1";
-        char B_filename[100] = "Nom bidon2";
-        A = create_simple_matrix(parCtxt);
-        /*B = create_simple_matrix(parCtxt);*/
-        B = create_id_matrix(parCtxt);
-        /*A = read_matrix(A_filename, &A);*/
-        /*B = read_matrix(B_filename, &B);*/
+        /*A = create_simple_matrix(parCtxt);*/
+        /*B = create_id_matrix(parCtxt);*/
+        A = read_matrix(A_filename);
+        B = read_matrix(B_filename);
     }
 
     initial_distrib(parCtxt, A, B,a ,b);

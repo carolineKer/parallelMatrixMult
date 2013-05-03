@@ -12,7 +12,7 @@ PROC_NB=4
 #A will be a I by K matrix, B will be a K by J matrix
 I=2
 J=2
-K=2
+K=3
 
 all: $(EXE)
 

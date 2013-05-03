@@ -1,36 +1,80 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+#include <string.h>
+#include <sys/stat.h>
+
 #include "matrix.h"
 
 Matrix * read_matrix(char * filename)
 {
-    /*FILE * fp = fopen(filename, "r");*/
-    /*if (fp == NULL)*/
-    /*{*/
-        /*printf("Unable to open %s\n",filename);*/
-        /*exit(-1);*/
-    /*}*/
-
-    /*int I, J;*/
-    /*fscanf(fp, "%d %d", &I, &J);*/
-    Matrix * m = (Matrix *)malloc(sizeof(Matrix));
-    m->I = 2;
-    m->J = 2;
-
-    m->ptr = (double **)malloc(m->I* sizeof(double *));
-
-    for (int i = 0; i< m->I; i++)
+    FILE * fp = fopen(filename, "r");
+    if (fp == NULL)
     {
-        m->ptr[i] = (double *)malloc(m->J *sizeof(double));
-        for (int j = 0; j< m->J; j++)
+        printf("Unable to open %s\n",filename);
+        exit(-1);
+    }
+
+    //Get file size
+    struct stat st;
+    stat(filename, &st);
+    long size = st.st_size;
+
+    char * str = (char *)malloc(size + 1);
+
+    fgets(str, size+1, fp);
+
+
+    char * p = str;
+    int nb_rows = 1;
+    int nb_cols = 1;
+
+    int first_line = 1;
+
+    while (3.14)
+    {
+        //get size of the first line
+        while (first_line)
         {
-            m->ptr[i][j] = i*m->I +j;
+            p = strpbrk(p, ",;");
+            if (p== NULL || *p== ';') 
+            {
+                first_line = 0;
+                break;
+            }
+            nb_cols++;
+            p++;
+        }
+
+        p = strchr(p, ';');
+
+        if (p == NULL) break;
+        nb_rows++;
+        p++;
+    }
+
+    p = str;
+    char * tok = strtok(p, ",;");
+
+    Matrix * m = (Matrix *)malloc(sizeof(Matrix));
+    m->I = nb_rows;
+    m->J = nb_cols;
+    m->ptr = (double **)malloc(m->I*sizeof(double*));
+    for (int i = 0 ; i<m->I; i++)
+    {
+        m->ptr[i] = (double *)malloc(m->J*sizeof(double));
+        for (int j = 0; j<m->J; j++)
+        {
+            assert(tok != NULL);
+            m->ptr[i][j] = atof(tok);
+            tok = strtok(NULL, ",;");
         }
     }
 
+    assert(tok == NULL);
+
+    fclose(fp);
     return m;
-    /*fclose(fp);*/
 }
 
 //Create a matrix with one data per processor
