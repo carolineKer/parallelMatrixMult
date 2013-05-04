@@ -17,8 +17,8 @@ K=3
 
 all: $(EXE)
 
-test: $(MATRIX)A $(MATRIX)B $(MATRIX)C
-	$(TEST_DIR)/check_matrix.py $^
+check: $(MATRIX)A $(MATRIX)B $(MATRIX)C $(TEST_DIR)/check_matrix.py
+	$(TEST_DIR)/check_matrix.py  $(MATRIX)A $(MATRIX)B $(MATRIX)C 
 
 run: $(MATRIX)C
 

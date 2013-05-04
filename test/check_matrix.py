@@ -14,6 +14,7 @@ def matrix_from_file(path):
 
 if __name__=="__main__":
     if len(sys.argv) != 4:
+        print sys.argv, len(sys.argv)
         usage()
         sys.exit(-1)
 
@@ -35,29 +36,39 @@ if __name__=="__main__":
             l = filename.split("_")
             p = int(l[1])
             q = int(l[2])
+            print (p,q)
             if p > max_p:
-                p = max_p
+                max_p = p
             if q >max_q:
-                q = max_q
+                max_q = q
             filename = os.path.join(dir, filename)
+            print filename
             matrix_dict[(p,q)] = matrix_from_file(filename)
 
     x = 0
     y = 0
 
-    for p in range(0,max_p+1):
-        delta = matrix_dict[(p,0)].shape[1]
-        for q in range(0, max_q+1):
-            print (p, q)
-            assert(delta == matrix_dict[(p,q)].shape[1])
-            m = matrix_dict[(p,q)]
-            C[x:x+m.shape[0],y:y+m.shape[1]]
-            x += m.shape[0]
-        y+= delta
+    print matrix_dict
 
+    for p in range(0,max_p+1):
+        delta = matrix_dict[(p,0)].shape[0]
+        for q in range(0, max_q+1):
+            print "___"
+            print (p,q)
+            assert(delta == matrix_dict[(p,q)].shape[0])
+            m = matrix_dict[(p,q)]
+            print "m",m
+            C[x:x+m.shape[0],y:y+m.shape[1]] = m
+            print C
+            y += m.shape[1]
+        x+= delta
+
+    print "C"
     print C
 
     D = A*B
+    print "D"
+    print D
     if (C == D).all():
         print "OK"
     else:
