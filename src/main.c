@@ -66,6 +66,9 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
 
                     for (int i = 0; i < A_ctxt.i; i++)
                     {
+                        printf("send A %d a %d %d to %d, %lf\n", 
+(A_x + i)*A->J+A_y,
+                                row, col, destA, A->ptr[(A_x + i)*A->J+A_y]);
                         MPI_Send(&(A->ptr[(A_x + i)*A->J+A_y]), A_ctxt.j,
                             MPI_DOUBLE, destA, 0xA, MPI_COMM_WORLD);
                     }
@@ -104,13 +107,14 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
                 }
 
                 //Next part of A/B to send
-                B_y += B_ctxt.j;
-                A_y += A_ctxt.j;
-                if (row == parCtxt->P-1)
+                B_y = (B_y +B_ctxt.j)%B->J;
+                A_y = (A_y+A_ctxt.j)%A->J;
+                if (col == parCtxt->P-1)
                 {
-                    B_x += B_ctxt.j;
-                    A_x += A_ctxt.j;
+                    B_x += B_ctxt.i;
+                    A_x += A_ctxt.i;
                 }
+                printf ("%d %d\n",A_x,A_y);
             }
         }
 
@@ -123,7 +127,7 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
         MPI_Recv(dim, 2, MPI_INTEGER, 0, 0xA, MPI_COMM_WORLD, &status);
         a->I = dim[0];
         a->J = dim[1];
-        for (int i = 0; i<parCtxt->i; i++)
+        for (int i = 0; i<a->I; i++)
         {
             MPI_Recv(&(a->ptr[i*a->J]), a->J, MPI_DOUBLE,
                 0, 0xA, MPI_COMM_WORLD, &status);
@@ -132,12 +136,17 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
         MPI_Recv(dim, 2, MPI_INTEGER, 0, 0xB, MPI_COMM_WORLD, &status);
         b->I = dim[0];
         b->J = dim[1];
-        for (int i = 0; i<parCtxt->i; i++)
+        for (int i = 0; i<b->J; i++)
         {
-            MPI_Recv(&(b->ptr[i*b->J]), parCtxt->j, MPI_DOUBLE,
+            MPI_Recv(&(b->ptr[i*b->J]), b->J, MPI_DOUBLE,
                 0, 0xB, MPI_COMM_WORLD, &status);
         }
+
     }
+        printf("process %d %d a %lf\n",parCtxt->p, parCtxt->q, a->ptr[0]);
+        printf("process %d %d size a %d %d\n",parCtxt->p, parCtxt->q, a->I, a->J);
+        printf("process %d %d b %lf\n",parCtxt->p, parCtxt->q, 
+                b->ptr[0 ]);
 }
 
 int main(int argc, char** argv)
