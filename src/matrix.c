@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <mpi.h>
 
 #include "matrix.h"
 #include "cblas.h"
@@ -13,6 +14,26 @@ void matrix_mult_add_cblas(Matrix * a, Matrix *b, Matrix *c)
    cblas_dgemm(CblasRowMajor , CblasNoTrans,CblasNoTrans, a->I, b->J, a->J, 
            1, a->ptr, a->J, b->ptr, b->J ,1, c->ptr, c->J);
 }
+
+void shift_matrices(Matrix * m, int max_size,  int source , int dest )
+{
+    MPI_Status status;
+    
+    //Shift matrix
+    MPI_Sendrecv_replace(m->ptr, max_size, MPI_DOUBLE, dest, 17,
+            source, 17, MPI_COMM_WORLD, &status);
+
+    //Shift matrix dimensions
+    int dim[2];
+    dim[0] = m->I;
+    dim[1] = m->J;
+    MPI_Sendrecv_replace(dim, 2, MPI_INTEGER,
+                    dest, 0xcafe, source, 0xcafe, MPI_COMM_WORLD, &status);
+
+    m->I = dim[0];
+    m->J = dim[1];
+}
+
 
 Matrix * read_matrix(char * filename)
 {

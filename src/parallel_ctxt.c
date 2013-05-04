@@ -28,11 +28,19 @@ PAR_CTXT * parallel_context_init(int argc, char** argv)
     parCtxt->p = rank/parCtxt->P;
     parCtxt->q = rank%parCtxt->P;
     parCtxt->rank = rank;
-    parCtxt->i = 2; //rows per processor
-    parCtxt->j = 2; //columns per processor
-    parCtxt->k = 3;
 
     return parCtxt;
+}
+
+//(i, j) = size of block matrix on this process with no shift
+void size_of_block(PAR_CTXT *parCtxt, int I, int J)
+{
+    parCtxt->i = I/parCtxt->P;
+    if (parCtxt->p < I%parCtxt-> P)
+        (parCtxt->i)++;
+    parCtxt->j = J/parCtxt->P;
+    if (parCtxt->q < J%parCtxt->P)
+        (parCtxt->j)++;
 }
 
 void parallel_context_finalize(PAR_CTXT * parCtxt)

@@ -29,6 +29,7 @@ $(MATRIX)B:
 	$(TEST_DIR)/generate_matrix.py $(K) $(J) > $@
 
 $(MATRIX)C: $(EXE) $(MATRIX)A $(MATRIX)B
+	mkdir -p $(MATRIX)C
 	mpirun -np $(PROC_NB) $(EXE) $(MATRIX)A $(MATRIX)B $(MATRIX)C
 
 $(EXE):$(OBJ)
