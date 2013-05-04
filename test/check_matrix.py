@@ -58,9 +58,10 @@ if __name__=="__main__":
             assert(delta == matrix_dict[(p,q)].shape[0])
             m = matrix_dict[(p,q)]
             print "m",m
+            print x,y
             C[x:x+m.shape[0],y:y+m.shape[1]] = m
             print C
-            y += m.shape[1]
+            y = (y+m.shape[1])%C.shape[1]
         x+= delta
 
     print "C"

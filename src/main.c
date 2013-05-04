@@ -107,24 +107,27 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
                 }
 
                 //Next part of A/B to send
-                B_y = (B_y +B_ctxt.j)%B->J;
+                B_y = (B_y+B_ctxt.j)%B->J;
                 A_y = (A_y+A_ctxt.j)%A->J;
+
                 if (col == parCtxt->P-1)
                 {
                     B_x += B_ctxt.i;
                     A_x += A_ctxt.i;
                 }
-                printf ("%d %d\n",A_x,A_y);
             }
         }
-
 
     } //Receive block matrices
     else
     {
         MPI_Status status;
         int dim[2];
+        if (parCtxt->rank == 2)
+        printf("process %d %d wait for a_dim\n", parCtxt->p, parCtxt->q);
         MPI_Recv(dim, 2, MPI_INTEGER, 0, 0xA, MPI_COMM_WORLD, &status);
+        if (parCtxt->rank == 2)
+        printf("process %d %d  a_dim\n", parCtxt->p, parCtxt->q);
         a->I = dim[0];
         a->J = dim[1];
         for (int i = 0; i<a->I; i++)
@@ -133,20 +136,29 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
                 0, 0xA, MPI_COMM_WORLD, &status);
         }
 
+        if (parCtxt->rank == 2)
+        printf("process %d %d wait for b_dim\n", parCtxt->p, parCtxt->q);
         MPI_Recv(dim, 2, MPI_INTEGER, 0, 0xB, MPI_COMM_WORLD, &status);
+        if (parCtxt->rank == 2)
+        printf("process %d %d   b_dim\n", parCtxt->p, parCtxt->q);
         b->I = dim[0];
         b->J = dim[1];
-        for (int i = 0; i<b->J; i++)
+        if (parCtxt->rank == 2)
+        printf("process %d %d size b %d %d\n",parCtxt->p, parCtxt->q, b->I, b->J);
+        for (int i = 0; i<b->I; i++)
         {
             MPI_Recv(&(b->ptr[i*b->J]), b->J, MPI_DOUBLE,
                 0, 0xB, MPI_COMM_WORLD, &status);
         }
 
     }
+        if (parCtxt->rank == 2)
+        {
         printf("process %d %d a %lf\n",parCtxt->p, parCtxt->q, a->ptr[0]);
         printf("process %d %d size a %d %d\n",parCtxt->p, parCtxt->q, a->I, a->J);
         printf("process %d %d b %lf\n",parCtxt->p, parCtxt->q, 
                 b->ptr[0 ]);
+        }
 }
 
 int main(int argc, char** argv)
@@ -212,7 +224,7 @@ int main(int argc, char** argv)
 
     int max_k = dim[1]/parCtxt->P;
     if (dim[1]%parCtxt->P)
-        dim[1]++;
+        max_k++;
 
     //Allocate block matrices
     Matrix * a = alloc_block_matrix(parCtxt->i, max_k);
@@ -220,8 +232,10 @@ int main(int argc, char** argv)
     Matrix * c = alloc_block_matrix(parCtxt->i, parCtxt->j);
 
     initial_distrib(parCtxt, A, B,a ,b);
+    printf("init done %d\n", parCtxt->rank);
 
-    matrix_mult_add(a,b,c);
+    matrix_mult_add_cblas(a,b,c);
+    printf("first mult done\n");
     MPI_Status status;
     for (int shift = 1; shift < parCtxt->P; shift++)
     {
@@ -231,7 +245,9 @@ int main(int argc, char** argv)
         int destA = destArow * parCtxt->P + destAcol;
         int rcvA = destArow * parCtxt->P + rcvAcol;
 
+        printf("process %d %d shift %d a\n",parCtxt->p, parCtxt->q, shift);
         shift_matrices(a, parCtxt->i*max_k, rcvA, destA);
+        printf("process %d %d shift %d a Done\n", parCtxt->p, parCtxt->q, shift);
 
         int Bcol = parCtxt->q;
         int destBrow = mod((parCtxt->p-1),parCtxt->P);
@@ -239,7 +255,9 @@ int main(int argc, char** argv)
         int destB = destBrow *parCtxt->P + Bcol;
         int rcvB = rcvBrow *parCtxt->P + Bcol;
 
+        printf("process %d %d shift %d b\n" ,parCtxt->p, parCtxt->q, shift);
         shift_matrices(b, parCtxt->j*max_k, rcvB, destB);
+        printf("process %d %d shift %d b Done\n", parCtxt->p, parCtxt->q, shift);
 
         matrix_mult_add_cblas(a,b,c);
     }
