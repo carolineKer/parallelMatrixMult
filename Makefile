@@ -9,10 +9,10 @@ MATRIX=$(TEST_DIR)/matrix
 SRC:=$(wildcard $(SRC_DIR)/*.c)
 OBJ:=$(patsubst %.c,%.o, $(SRC))
 EXE:=matrix_mult.exe
-PROC_NB=4
+PROC_NB=9
 #A will be a I by K matrix, B will be a K by J matrix
-I=2
-J=2
+I=3
+J=3
 K=3
 
 all: $(EXE)
@@ -36,6 +36,7 @@ $(EXE):$(OBJ)
 	$(LD) -o $@ $^ $(LDFLAGS) 
 
 clean:
-	rm -f $(MATRIX)*
+	rm -f $(MATRIX)A $(MATRIX)B
+	rm -rf $(MATRIX)C
 	rm -f $(SRC_DIR)/*.o
 	rm -f $(EXE)
