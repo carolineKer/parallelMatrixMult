@@ -1,0 +1,48 @@
+###################################
+On an UNIX workstation (ubuntu...)
+###################################
+    Required:
+        mpicc, mpirun, libblas-dev, python (2.7) with numpy and matplotlib
+
+    Make sure that the line "ON_FERLIN=True" is commented in the Makefile
+
+****Check that it works:
+        make check
+
+    This should print OK or KO (compile, generate random matrix A and B, run,
+    check the results)
+
+    The sizes of the matrices and the number of processors are given in the
+    Makefile (I, J, K, PROC_NB). You can check them, but you will need to
+    clean if you have already run "make check"
+        make clean
+        make check
+
+*****Plotting speedup
+    ./run.bash
+
+    This should create a directory (result_1000) with a PNG of the speedup for 
+    1000*1000 matrices.
+
+###################################
+On Ferlin
+###################################
+
+    You must add some modules (as usual). But you also need mkl:
+        module add mkl 
+
+    Uncomment the line "ON_FERLIN=True"
+
+*****Plotting speedup:
+Step 1  On ferlin: ./run_ferlin.bash
+
+        This will create a directory result_5000
+
+Step 2  On a computer with python, numpy and matplotlib, in the directory
+        which contains plot_speedup.py
+
+        ./plot_speedup.py result_5000
+
+        This should create a PNG with the speedup
+
+
