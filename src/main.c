@@ -59,8 +59,6 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
 
                     MPI_Send(dim, 2, MPI_INTEGER, destA, 0xA, MPI_COMM_WORLD);
 
-                    printf("Send A to %d %d %d\n", destA, A_ctxt.i,
-                            A_ctxt.j);
                     for (int i = 0; i < A_ctxt.i; i++)
                     {
                         MPI_Send(&(A->ptr[(A_x + i)*A->J+A_y]), A_ctxt.j,
@@ -112,8 +110,6 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
                     dim[0] = B_ctxt.i;
                     dim[1] = B_ctxt.j;
                     MPI_Send(dim, 2, MPI_INTEGER, destB, 0xB, MPI_COMM_WORLD);
-                    printf("Send B to %d %d %d\n", destB, B_ctxt.i,
-                            B_ctxt.j);
 
                     for (int i = 0; i <B_ctxt.i; i++)
                     {
@@ -147,7 +143,6 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
         if (parCtxt->rank == 2)
         a->I = dim[0];
         a->J = dim[1];
-        printf("%d rcv A to %d %d\n", parCtxt->rank, a->I, a->J);
         for (int i = 0; i<a->I; i++)
         {
             MPI_Recv(&(a->ptr[i*a->J]), a->J, MPI_DOUBLE,
@@ -157,7 +152,6 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
         MPI_Recv(dim, 2, MPI_INTEGER, 0, 0xB, MPI_COMM_WORLD, &status);
         b->I = dim[0];
         b->J = dim[1];
-        printf("%d rcv B to %d %d\n", parCtxt->rank ,b->I, b->J);
         for (int i = 0; i<b->I; i++)
         {
             MPI_Recv(&(b->ptr[i*b->J]), b->J, MPI_DOUBLE,
@@ -267,7 +261,6 @@ int main(int argc, char** argv)
     Matrix * c = alloc_block_matrix(parCtxt->i, parCtxt->j);
 
     initial_distrib(parCtxt, A, B,a ,b);
-    printf("%d Init distrib\n",parCtxt->rank);
 
     matrix_mult_add_cblas(a,b,c);
     MPI_Status status;
@@ -279,7 +272,6 @@ int main(int argc, char** argv)
         int destA = destArow * parCtxt->P + destAcol;
         int rcvA = destArow * parCtxt->P + rcvAcol;
 
-        printf("%d Shift a\n",parCtxt->rank);
         shift_matrices(a, parCtxt->i*max_k, rcvA, destA);
 
         int Bcol = parCtxt->q;
@@ -288,9 +280,7 @@ int main(int argc, char** argv)
         int destB = destBrow *parCtxt->P + Bcol;
         int rcvB = rcvBrow *parCtxt->P + Bcol;
 
-        printf("Shift b\n");
         shift_matrices(b, parCtxt->j*max_k, rcvB, destB);
-        printf("Done\n");
 
         matrix_mult_add(a,b,c);
     }
