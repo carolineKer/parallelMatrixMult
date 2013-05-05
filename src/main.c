@@ -14,6 +14,14 @@ int mod(int r,int  m)
     return res;
 }
 
+void usage(char ** argv)
+{
+    printf("%s directory [ I K J ]\n", argv[0]);
+    printf("If I K and J are given, the matrices are randomly picked (A (I,K), B(K,J)), and the result is not saved\n");
+    printf("Otherwise, the program tries to read matrixA and matrixB from dir and saves the resulting matrix\n.");
+    printf("In both cases, the timing performances are stored in directory\n");
+}
+
 void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
         Matrix * B, Matrix * a, Matrix * b)
 {
@@ -147,28 +155,51 @@ int main(int argc, char** argv)
 {
     PAR_CTXT  * parCtxt;
     parCtxt =  parallel_context_init(argc, argv);
-    int dim[2];
+    int dim[3];
 
     Matrix * A = NULL;
     Matrix * B = NULL;
+    char * directory;
 
     if (parCtxt->rank == 0)
     {
-        if (argc != 4)
+        if (argc == 5)
+        { 
+            int I,J,K;
+            directory = argv[1];
+            I = atoi(argv[2]);
+            K = atoi(argv[3]);
+            J = atoi(argv[4]);
+            if (I==0 || J == 0 || K == 0)
+            {
+                /*usage(argv);*/
+                MPI_Finalize();
+                exit(-1);
+            }
+            A = create_simple_matrix(I,K);
+            B = create_simple_matrix(K,J);
+            printf("Simple matrix created\n");
+        }
+        else if (argc == 2)
         {
-            printf("%s matrixA matrixB\n", argv[0]);
+            directory = argv[1];
+            char filename[100];
+            sprintf(filename, "%s/matrixA", directory);
+            A = read_matrix(filename);
+
+            sprintf(filename, "%s/matrixB", directory);
+            B = read_matrix(filename);
+
+            printf("%d %d\n",A->I, A->J);
+            printf("%d %d\n",B->I, B->J);
+        }
+        else
+        {
+            /*usage(argv);*/
             MPI_Finalize();
             exit(-1);
         }
-        char * A_filename = argv[1];
-        char * B_filename = argv[2];
 
-        /*A = create_simple_matrix(parCtxt->i*parCtxt->P, */
-                /*parCtxt->k*parCtxt->P);*/
-        /*B = create_id_matrix(parCtxt->k*parCtxt->P,*/
-                /*parCtxt->j*parCtxt->P);*/
-        A = read_matrix(A_filename);
-        B = read_matrix(B_filename);
 
 
         if (A->I < parCtxt->P || A->J < parCtxt->P ||
@@ -220,7 +251,9 @@ int main(int argc, char** argv)
     Matrix * b = alloc_block_matrix(max_k, parCtxt->j);
     Matrix * c = alloc_block_matrix(parCtxt->i, parCtxt->j);
 
+    printf("b\n");
     initial_distrib(parCtxt, A, B,a ,b);
+    printf("a\n");
 
     matrix_mult_add_cblas(a,b,c);
     MPI_Status status;
@@ -250,13 +283,14 @@ int main(int argc, char** argv)
     // END: Save results
     ///////////////////////////
     char time_file[100];
-    sprintf(time_file, "%s/time_file.txt", argv[3]);
+    sprintf(time_file, "%s/time_file.txt", argv[1]);
     
     print_data(time_file, print_time,  (void*)time, 0, 
             parCtxt->rank, parCtxt->P*parCtxt->P);
 
     char filename[100];
-    sprintf(filename, "%s/MatrixC_%d_%d", argv[3], parCtxt->p, parCtxt->q);
+    sprintf(filename, "%s/matrixC/MatrixC_%d_%d", argv[1], parCtxt->p, parCtxt->q);
+    printf("Filename %s\n",filename);
 
     FILE * fp = fopen(filename,"w");
     if (fp == NULL)
@@ -280,5 +314,4 @@ int main(int argc, char** argv)
 
     parallel_context_finalize(parCtxt);
 }
-
 
