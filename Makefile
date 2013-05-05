@@ -9,11 +9,11 @@ MATRIX=$(TEST_DIR)/matrix
 SRC:=$(wildcard $(SRC_DIR)/*.c)
 OBJ:=$(patsubst %.c,%.o, $(SRC))
 EXE:=matrix_mult.exe
-PROC_NB=4
+PROC_NB=100
 #A will be a I by K matrix, B will be a K by J matrix
-I=2
-J=3
-K=2
+I=140
+J=100
+K=145
 
 all: $(EXE)
 

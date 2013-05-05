@@ -3,6 +3,7 @@
 #include <mpi.h>
 #include <assert.h>
 #include "parallel_ctxt.h" 
+#include "parallel_print.h"
 #include "matrix.h"
 
 int mod(int r,int  m)
@@ -209,6 +210,13 @@ int main(int argc, char** argv)
     }
 
 
+    /////////////////////////////////
+    // Start
+    ////////////////////////////////
+    double time[2];
+    time[0] = MPI_Wtime();
+
+
 
     //Process 0 broadcasts max size of block matrices
     MPI_Bcast(dim, 3, MPI_INTEGER, 0, MPI_COMM_WORLD);
@@ -261,6 +269,17 @@ int main(int argc, char** argv)
 
         matrix_mult_add_cblas(a,b,c);
     }
+
+    time[1] = MPI_Wtime();
+    ///////////////////////////
+    // END: Save results
+    ///////////////////////////
+    printf("Here\n");
+    char time_file[100];
+    sprintf(time_file, "%s/time_file.txt", argv[3]);
+    
+    print_data(time_file, print_time,  (void*)time, 0, 
+            parCtxt->rank, parCtxt->P*parCtxt->P);
 
     char filename[100];
     sprintf(filename, "%s/MatrixC_%d_%d", argv[3], parCtxt->p, parCtxt->q);
