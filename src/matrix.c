@@ -52,6 +52,48 @@ void shift_matrices(Matrix * m, int max_size,  int source , int dest )
     m->J = dim[1];
 }
 
+void shift_matrices_odd_even(Matrix * m, Matrix * m_temp, int source, int dest, int rank)
+{
+    
+    int dim[2];
+    MPI_Status status;
+    //even phase. even proc sends, odd proc receives
+    if (rank%2)
+    {
+        dim[0] = m->I;
+        dim[1] = m->J;
+        MPI_Send(dim, 2, MPI_INTEGER, dest, 0, MPI_COMM_WORLD);
+        MPI_Send(m->ptr, m->I*m->J, MPI_DOUBLE, dest, 0, MPI_COMM_WORLD);
+
+        MPI_Recv(dim, 2, MPI_INTEGER, source, 1, MPI_COMM_WORLD, &status);
+        MPI_Recv(m->ptr, dim[0]*dim[1], MPI_DOUBLE, source, 1, MPI_COMM_WORLD, &status);
+        m->I = dim[0];
+        m->J = dim[1];
+
+    }
+    else
+    {
+        assert(m_temp != NULL);
+        int dim_temp[2];
+        //We need two buffers here: otherwise MPI_Recv will overwrite the data
+        MPI_Recv(dim_temp, 2, MPI_INTEGER, source, 0, MPI_COMM_WORLD, &status);
+        MPI_Recv(m_temp->ptr, dim_temp[0]*dim_temp[1], MPI_DOUBLE, source, 0, MPI_COMM_WORLD, &status);
+
+        dim[0] = m->I;
+        dim[1] = m->J;
+        MPI_Send(dim, 2, MPI_INTEGER, dest, 1, MPI_COMM_WORLD);
+        MPI_Send(m->ptr, dim[0]*dim[1], MPI_DOUBLE, dest, 1, MPI_COMM_WORLD);
+
+        double * swp;
+        m->I = dim_temp[0];
+        m->J = dim_temp[1];
+        swp = m->ptr;
+        m->ptr = m_temp->ptr;
+        m_temp->ptr = swp;
+    }
+
+}
+
 
 Matrix * read_matrix(char * filename)
 {

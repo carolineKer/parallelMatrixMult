@@ -257,12 +257,25 @@ int main(int argc, char** argv)
 
     //Allocate block matrices
     Matrix * a = alloc_block_matrix(parCtxt->i, max_k);
+    Matrix * a_tmp = NULL;
+
+    if (parCtxt->q%2 == 0)
+    {
+        a_tmp = alloc_block_matrix(parCtxt->i, max_k);
+    }
+
     Matrix * b = alloc_block_matrix(max_k, parCtxt->j);
+    Matrix * b_tmp = NULL;
+    if (parCtxt->p%2 == 0)
+    {
+        b_tmp = alloc_block_matrix(max_k, parCtxt->j);
+    }
+
     Matrix * c = alloc_block_matrix(parCtxt->i, parCtxt->j);
 
     initial_distrib(parCtxt, A, B,a ,b);
 
-    matrix_mult_add_cblas(a,b,c);
+    matrix_mult_add(a,b,c);
     MPI_Status status;
     for (int shift = 1; shift < parCtxt->P; shift++)
     {
@@ -272,7 +285,9 @@ int main(int argc, char** argv)
         int destA = destArow * parCtxt->P + destAcol;
         int rcvA = destArow * parCtxt->P + rcvAcol;
 
-        shift_matrices(a, parCtxt->i*max_k, rcvA, destA);
+        /*shift_matrices(a, parCtxt->i*max_k, rcvA, destA);*/
+        shift_matrices_odd_even(a, a_tmp, rcvA, destA,
+                parCtxt->q);
 
         int Bcol = parCtxt->q;
         int destBrow = mod((parCtxt->p-1),parCtxt->P);
@@ -280,7 +295,7 @@ int main(int argc, char** argv)
         int destB = destBrow *parCtxt->P + Bcol;
         int rcvB = rcvBrow *parCtxt->P + Bcol;
 
-        shift_matrices(b, parCtxt->j*max_k, rcvB, destB);
+        shift_matrices_odd_even(b, b_tmp, rcvB, destB, parCtxt->p);
 
         matrix_mult_add(a,b,c);
     }

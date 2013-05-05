@@ -17,4 +17,5 @@ Matrix * alloc_block_matrix(int row, int col);
 void matrix_mult_add(Matrix * a, Matrix *b, Matrix *c);
 void matrix_mult_add_cblas(Matrix * a, Matrix *b, Matrix *c);
 void shift_matrices(Matrix * m,int  max_size,  int source , int dest);
+void shift_matrices_odd_even(Matrix * m, Matrix * m_temp, int source, int dest, int rank);
 #endif
