@@ -29,13 +29,8 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
     //Process 0 sends matrices
     if (parCtxt->rank == 0)
     {
-        MPI_Request *reqs = calloc(parCtxt->P * parCtxt->P, sizeof(MPI_Request));
-        int reqIndex = 0;
-
         int A_x = 0;
         int A_y = 0;
-        int B_x = 0;
-        int B_y = 0;
         for (int row = 0; row < parCtxt->P; row++)
         {
             for (int col = 0; col <parCtxt->P; col++)
@@ -53,25 +48,12 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
                 destAcol = mod((destAcol -row),parCtxt->P); //shift
                 int destA = destArow * parCtxt->P +destAcol;
 
-                //Size of block matrix B_row_col
-                PAR_CTXT B_ctxt;
-                B_ctxt.P = parCtxt->P;
-                B_ctxt.p = row;
-                B_ctxt.q = col;
-                size_of_block(&B_ctxt, B->I, B->J);
-
-                //Where to send matrix B_row_col (initial shift)
-                int destBcol = col;
-                int destBrow = row;
-                destBrow = mod((destBrow - col),parCtxt->P); //shift
-                int destB = destBrow * parCtxt->P + destBcol;
 
                 ///////////////////////////////////////////////
                 //distribute matrix A
                 //////////////////////////////////////////////
                 if (destA != 0)
                 {
-                        /*printf("PROC 0: destA: %d\n", destA);*/
                     int dim[2];
                     dim[0]= A_ctxt.i;
                     dim[1]=A_ctxt.j;
@@ -86,7 +68,6 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
                 }
                 else
                 {
-                        /*printf("PROC 0: destA: 0\n");*/
                     assert(row == 0 && col == 0);
                     a->I = A_ctxt.i;
                     a->J = A_ctxt.j;
@@ -95,23 +76,50 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
                             a->ptr[i*a->J+j] = A->ptr[i*A->J+j];
                 }
 
+                //Next part of A/B to send
+                A_y = (A_y+A_ctxt.j)%A->J;
+
+                if (col == parCtxt->P-1)
+                {
+                    A_x += A_ctxt.i;
+                }
+            }
+        }
+
+        int B_x = 0;
+        int B_y = 0;
+        for (int row = 0; row < parCtxt->P; row++)
+        {
+            for (int col = 0; col <parCtxt->P; col++)
+            {
+                //Size of block matrix B_row_col
+                PAR_CTXT B_ctxt;
+                B_ctxt.P = parCtxt->P;
+                B_ctxt.p = row;
+                B_ctxt.q = col;
+                size_of_block(&B_ctxt, B->I, B->J);
+
+                //Where to send matrix B_row_col (initial shift)
+                int destBcol = col;
+                int destBrow = row;
+                destBrow = mod((destBrow - col),parCtxt->P); //shift
+                int destB = destBrow * parCtxt->P + destBcol;
+
                 if (destB != 0) //Send block
                 {
                     int dim[2];
                     dim[0] = B_ctxt.i;
                     dim[1] = B_ctxt.j;
-                        /*printf("PROC 0: destB: %d\n", destB);*/
                     MPI_Send(dim, 2, MPI_INTEGER, destB, 0xB, MPI_COMM_WORLD);
 
                     for (int i = 0; i <B_ctxt.i; i++)
                     {
                         MPI_Send(&(B->ptr[(B_x+i)*B->J+B_y]), B_ctxt.j,
-                            MPI_DOUBLE, destB, 0xB, MPI_COMM_WORLD);
+                                MPI_DOUBLE, destB, 0xB, MPI_COMM_WORLD);
                     }
                 }
                 else //copy
                 {
-                        /*printf("PROC 0: destB: %d\n", 0);*/
                     assert(row == 0 && col == 0);
                     b->I = B_ctxt.i;
                     b->J = B_ctxt.j;
@@ -119,42 +127,32 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
                         for (int j = 0; j<B_ctxt.j; j++)
                             b->ptr[i*b->J+j] = B->ptr[i*B->J+j];
                 }
-
-                //Next part of A/B to send
                 B_y = (B_y+B_ctxt.j)%B->J;
-                A_y = (A_y+A_ctxt.j)%A->J;
-
                 if (col == parCtxt->P-1)
                 {
                     B_x += B_ctxt.i;
-                    A_x += A_ctxt.i;
                 }
             }
         }
-        /*printf("PROC 0: termine initial distrib\n");*/
 
     } //Receive block matrices
     else
     {
         MPI_Status status;
         int dim[2];
-                /*printf("PROC: %d, INITIAL DISTRIB: avant recv taille a\n", parCtxt->rank);*/
         MPI_Recv(dim, 2, MPI_INTEGER, 0, 0xA, MPI_COMM_WORLD, &status);
         if (parCtxt->rank == 2)
         a->I = dim[0];
         a->J = dim[1];
-                /*printf("PROC: %d, INITIAL DISTRIB: avant recv contenu a\n", parCtxt->rank);*/
         for (int i = 0; i<a->I; i++)
         {
             MPI_Recv(&(a->ptr[i*a->J]), a->J, MPI_DOUBLE,
                 0, 0xA, MPI_COMM_WORLD, &status);
         }
 
-                /*printf("PROC: %d, INITIAL DISTRIB: avant recv taille b\n", parCtxt->rank);*/
         MPI_Recv(dim, 2, MPI_INTEGER, 0, 0xB, MPI_COMM_WORLD, &status);
         b->I = dim[0];
         b->J = dim[1];
-                /*printf("PROC: %d, INITIAL DISTRIB: avant recv contenu b\n", parCtxt->rank);*/
         for (int i = 0; i<b->I; i++)
         {
             MPI_Recv(&(b->ptr[i*b->J]), b->J, MPI_DOUBLE,
@@ -163,7 +161,6 @@ void initial_distrib(PAR_CTXT * parCtxt, Matrix * A,
 
     }
 }
-
 
 
 
@@ -343,13 +340,7 @@ int main(int argc, char** argv)
         b->ptr = b_buf_tmp;
         b_buf_tmp = tmp;
 
-<<<<<<< HEAD
-        matrix_mult_add(a,b,c);
-=======
-        /*printf("tour = %d, avant multiplication\n", shift);*/
         matrix_mult_add_cblas(a,b,c);
-        /*printf("tour = %d, après multiplication\n", shift);*/
->>>>>>> Using non-blocking communications for the main part
     }
 
     time[1] = MPI_Wtime();
