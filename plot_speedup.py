@@ -5,7 +5,7 @@ import os
 
 def plot_speed_up(dir):
     T_serial = -1.0
-    p_list = [1, 4, 9, 16, 25, 36]
+    p_list = [1, 4, 9, 16, 25]
     time_list = []
 
     i = 0
