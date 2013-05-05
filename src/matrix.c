@@ -6,8 +6,13 @@
 #include <mpi.h>
 
 #include "matrix.h"
+
+//Comment on ferlin
+#ifdef ON_FERLIN
+#include "mkl.h"
+#else
 #include "cblas.h"
-/*#include "mkl.h"*/
+#endif
 
 void matrix_mult_add_cblas(Matrix * a, Matrix *b, Matrix *c)
 {

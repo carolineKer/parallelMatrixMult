@@ -1,9 +1,21 @@
 CC:=mpicc
 LD:=mpicc
-LDFLAGS:=-lm -lblas
-#LDFLAGS+=-L/pdc/vol/i-compilers/11.1/icc/mkl/lib/em64t -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -Wl,--rpath,/pdc/vol/i-compilers/11.1/icc/mkl/lib/em64t
 CFLAGS:=-std=c99 -g
-#CFLAGS+=-I/pdc/vol/i-compilers/11.1/icc/mkl/include
+
+#uncomment if you are on ferlin
+ON_FERLIN=True
+
+
+ifeq ($(ON_FERLIN),True)
+	LDFLAGS+=-L/pdc/vol/i-compilers/11.1/icc/mkl/lib/em64t -lmkl_intel_lp64 -lmkl_sequential -lmkl_core -lpthread -Wl,--rpath,/pdc/vol/i-compilers/11.1/icc/mkl/lib/em64t
+	CFLAGS+=-I/pdc/vol/i-compilers/11.1/icc/mkl/include -DON_FERLIN
+else
+	LDFLAGS:=-lm -lblas
+endif
+
+
+#Uncomment if you are on ferlin
+
 SRC_DIR=src
 TEST_DIR=test
 TEST_RES=result
@@ -12,6 +24,7 @@ MATRIX=$(MATRIX_DIR)/matrix
 SRC:=$(wildcard $(SRC_DIR)/*.c)
 OBJ:=$(patsubst %.c,%.o, $(SRC))
 EXE:=matrix_mult.exe
+
 PROC_NB=4
 #A will be a I by K matrix, B will be a K by J matrix
 I=2
