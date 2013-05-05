@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-N=1041
+N=1000
 RES_DIR=result_$N
 
 make
