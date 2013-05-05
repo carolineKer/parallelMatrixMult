@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Usage: mympirun -np <#processes> program [program parameters]
+
+module add i-compilers mpi
+
+mpirun -display-map -machinefile $SP_HOSTFILE "$@"
+
