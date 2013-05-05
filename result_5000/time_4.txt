@@ -1,0 +1,16 @@
+On process P: 0
+Start time: 1367776106.137547
+End time: 1367776115.691527
+Execution time: 9.553980
+On process P: 1
+Start time: 1367776104.068420
+End time: 1367776115.697919
+Execution time: 11.629499
+On process P: 2
+Start time: 1367776104.068306
+End time: 1367776115.668305
+Execution time: 11.599999
+On process P: 3
+Start time: 1367776104.068085
+End time: 1367776115.681632
+Execution time: 11.613547

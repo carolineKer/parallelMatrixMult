@@ -1,0 +1,36 @@
+On process P: 0
+Start time: 1367776111.573986
+End time: 1367776117.362338
+Execution time: 5.788352
+On process P: 1
+Start time: 1367776109.550618
+End time: 1367776117.372719
+Execution time: 7.822101
+On process P: 2
+Start time: 1367776109.550113
+End time: 1367776117.372382
+Execution time: 7.822269
+On process P: 3
+Start time: 1367776109.550539
+End time: 1367776117.373932
+Execution time: 7.823393
+On process P: 4
+Start time: 1367776109.550647
+End time: 1367776117.375930
+Execution time: 7.825283
+On process P: 5
+Start time: 1367776109.552023
+End time: 1367776117.365297
+Execution time: 7.813274
+On process P: 6
+Start time: 1367776109.549842
+End time: 1367776117.344056
+Execution time: 7.794214
+On process P: 7
+Start time: 1367776109.550627
+End time: 1367776117.354480
+Execution time: 7.803853
+On process P: 8
+Start time: 1367776109.551838
+End time: 1367776117.368420
+Execution time: 7.816582
