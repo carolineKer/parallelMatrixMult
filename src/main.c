@@ -275,7 +275,7 @@ int main(int argc, char** argv)
 
     initial_distrib(parCtxt, A, B,a ,b);
 
-    matrix_mult_add(a,b,c);
+    matrix_mult_add_cblas(a,b,c);
     MPI_Status status;
     for (int shift = 1; shift < parCtxt->P; shift++)
     {
@@ -297,7 +297,7 @@ int main(int argc, char** argv)
 
         shift_matrices_odd_even(b, b_tmp, rcvB, destB, parCtxt->p);
 
-        matrix_mult_add(a,b,c);
+        matrix_mult_add_cblas(a,b,c);
     }
 
     time[1] = MPI_Wtime();

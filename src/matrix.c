@@ -6,7 +6,8 @@
 #include <mpi.h>
 
 #include "matrix.h"
-#include "cblas.h"
+//#include "cblas.h"
+#include "mkl.h"
 
 void matrix_mult_add_cblas(Matrix * a, Matrix *b, Matrix *c)
 {
