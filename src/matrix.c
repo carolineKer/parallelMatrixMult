@@ -7,6 +7,7 @@
 
 #include "matrix.h"
 #include "cblas.h"
+/*#include "mkl.h"*/
 
 void matrix_mult_add_cblas(Matrix * a, Matrix *b, Matrix *c)
 {
@@ -164,14 +165,8 @@ Matrix * alloc_block_matrix(int nb_row, int nb_col)
     Matrix * m = (Matrix *)malloc(sizeof(Matrix));
     m->I = nb_row;
     m->J = nb_col;
-    m->ptr = (double *)malloc( m->I*m->J*sizeof(double));
-    for (int i = 0 ; i<m->I; i++)
-    {
-        for (int j = 0; j<m->J; j++)
-        {
-            m->ptr[i*m->J+j] = 0;
-        }
-    }
+    m->ptr = (double *)calloc(m->I*m->J, sizeof(double));
+
     return m;
 }
 
