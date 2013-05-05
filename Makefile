@@ -3,7 +3,8 @@ LD:=mpicc
 CFLAGS:=-std=c99 -g
 
 #uncomment if you are on ferlin
-ON_FERLIN=True
+
+#ON_FERLIN=True
 
 
 ifeq ($(ON_FERLIN),True)
@@ -27,9 +28,9 @@ EXE:=matrix_mult.exe
 
 PROC_NB=4
 #A will be a I by K matrix, B will be a K by J matrix
-I=2
-J=1007
-K=2
+I=100
+J=91
+K=54
 
 all: $(EXE)
 
