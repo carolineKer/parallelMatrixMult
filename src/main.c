@@ -176,9 +176,8 @@ int main(int argc, char** argv)
                 MPI_Finalize();
                 exit(-1);
             }
-            A = create_simple_matrix(I,K);
-            B = create_simple_matrix(K,J);
-            printf("Simple matrix created\n");
+            A = create_random_matrix(I,K);
+            B = create_random_matrix(K,J);
         }
         else if (argc == 2)
         {
