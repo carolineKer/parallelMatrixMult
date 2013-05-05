@@ -12,9 +12,9 @@ OBJ:=$(patsubst %.c,%.o, $(SRC))
 EXE:=matrix_mult.exe
 PROC_NB=4
 #A will be a I by K matrix, B will be a K by J matrix
-I=445
-J=32
-K=100
+I=3
+J=5
+K=1508
 
 all: $(EXE)
 
