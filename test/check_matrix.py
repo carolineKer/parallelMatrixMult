@@ -53,14 +53,9 @@ if __name__=="__main__":
     for p in range(0,max_p+1):
         delta = matrix_dict[(p,0)].shape[0]
         for q in range(0, max_q+1):
-            print "___"
-            print (p,q)
             assert(delta == matrix_dict[(p,q)].shape[0])
             m = matrix_dict[(p,q)]
-            print "m",m
-            print x,y
             C[x:x+m.shape[0],y:y+m.shape[1]] = m
-            print C
             y = (y+m.shape[1])%C.shape[1]
         x+= delta
 
@@ -70,7 +65,8 @@ if __name__=="__main__":
     D = A*B
     print "D"
     print D
-    if (C == D).all():
+    #Not really good
+    if (abs(C - D)/(C+D) < 10**(-6)).all():
         print "OK"
     else:
         print "KO"
