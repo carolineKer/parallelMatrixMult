@@ -15,6 +15,24 @@ void matrix_mult_add_cblas(Matrix * a, Matrix *b, Matrix *c)
            1, a->ptr, a->J, b->ptr, b->J ,1, c->ptr, c->J);
 }
 
+//Create random matrix
+Matrix * create_random_matrix(int nb_row, int nb_col)
+{
+    Matrix * m = (Matrix *)malloc(sizeof(Matrix));
+    m->I = nb_row;
+    m->J = nb_col;
+    m->ptr = (double *)malloc( m->I*m->J*sizeof(double));
+    for (int i = 0 ; i<m->I; i++)
+    {
+        for (int j = 0; j<m->J; j++)
+        {
+            //Random number between -100 and 100
+            m->ptr[i*m->J+j]  = 200.0*((float)rand()/(float)RAND_MAX)-100.0;
+        }
+    }
+    return m;
+}
+
 void shift_matrices(Matrix * m, int max_size,  int source , int dest )
 {
     MPI_Status status;

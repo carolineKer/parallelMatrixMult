@@ -12,6 +12,7 @@ typedef struct _Matrix
 Matrix * read_matrix(char * filename);
 Matrix * create_simple_matrix(int row, int col);
 Matrix * create_id_matrix(int row, int col);
+Matrix * create_random_matrix(int row, int col);
 Matrix * alloc_block_matrix(int row, int col);
 void matrix_mult_add(Matrix * a, Matrix *b, Matrix *c);
 void matrix_mult_add_cblas(Matrix * a, Matrix *b, Matrix *c);

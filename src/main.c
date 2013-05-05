@@ -251,9 +251,7 @@ int main(int argc, char** argv)
     Matrix * b = alloc_block_matrix(max_k, parCtxt->j);
     Matrix * c = alloc_block_matrix(parCtxt->i, parCtxt->j);
 
-    printf("b\n");
     initial_distrib(parCtxt, A, B,a ,b);
-    printf("a\n");
 
     matrix_mult_add_cblas(a,b,c);
     MPI_Status status;
@@ -283,32 +281,35 @@ int main(int argc, char** argv)
     // END: Save results
     ///////////////////////////
     char time_file[100];
-    sprintf(time_file, "%s/time_file.txt", argv[1]);
+    sprintf(time_file, "%s/time_%d.txt", argv[1], parCtxt->P*
+            parCtxt->P);
     
     print_data(time_file, print_time,  (void*)time, 0, 
             parCtxt->rank, parCtxt->P*parCtxt->P);
 
-    char filename[100];
-    sprintf(filename, "%s/matrixC/MatrixC_%d_%d", argv[1], parCtxt->p, parCtxt->q);
-    printf("Filename %s\n",filename);
-
-    FILE * fp = fopen(filename,"w");
-    if (fp == NULL)
+    if (argc == 2)//If matrices were read from file
     {
-        printf("Unable to open %s\n", filename);
-        exit(-1);
-    }
+        char filename[100];
+        sprintf(filename, "%s/matrixC/MatrixC_%d_%d", argv[1], parCtxt->p, parCtxt->q);
 
-    for (int i = 0; i < c->I; i++)
-    {
-        for (int j = 0; j<c->J; j++)
+        FILE * fp = fopen(filename,"w");
+        if (fp == NULL)
         {
-            fprintf(fp, "%lf", c->ptr[i*c->J+j]);
-            if (j != c->J-1) fprintf(fp, ",");
+            printf("Unable to open %s\n", filename);
+            exit(-1);
         }
-        if (i!= c->I-1) fprintf(fp, ";");
+
+        for (int i = 0; i < c->I; i++)
+        {
+            for (int j = 0; j<c->J; j++)
+            {
+                fprintf(fp, "%lf", c->ptr[i*c->J+j]);
+                if (j != c->J-1) fprintf(fp, ",");
+            }
+            if (i!= c->I-1) fprintf(fp, ";");
+        }
+        fclose(fp);
     }
-    fclose(fp);
     
     MPI_Barrier(MPI_COMM_WORLD);
 
